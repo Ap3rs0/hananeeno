@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>A Special Message For You</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Nunito', sans-serif;
+      background-color: #2b1d16;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    /* Card Container */
+    .container {
+      background: #3c2a21;
+      border-radius: 30px;
+      padding: 35px 30px;
+      max-width: 480px;
+      width: 100%;
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+      border: 4px solid #543d32;
+      text-align: center;
+      position: relative;
+      z-index: 10;
+      transition: all 0.3s ease;
+    }
+
+    h1, h2 {
+      font-family: 'Fredoka One', cursive;
+      color: #f4eee2;
+    }
+
+    h1 {
+      font-size: 1.8rem;
+      margin-bottom: 15px;
+      line-height: 1.3;
+    }
+
+    p {
+      color: #d8c4b6;
+      font-size: 1.05rem;
+      margin-bottom: 20px;
+      line-height: 1.5;
+    }
+
+    /* Progress Indicator */
+    .progress-bar {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 25px;
+    }
+
+    .dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background-color: #543d32;
+      transition: all 0.3s ease;
+    }
+
+    .dot.active {
+      background-color: #f4eee2;
+      transform: scale(1.2);
+    }
+
+    /* Questions & Options */
+    .question-title {
+      font-size: 1.25rem;
+      color: #f4eee2;
+      font-weight: 800;
+      margin-bottom: 20px;
+    }
+
+    .options {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .btn {
+      background-color: #2b1d16;
+      color: #f4eee2;
+      border: 2px solid #543d32;
+      padding: 14px 20px;
+      border-radius: 18px;
+      font-size: 1.05rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-family: 'Nunito', sans-serif;
+    }
+
+    .btn:hover {
+      background-color: #543d32;
+      color: #ffffff;
+      border-color: #d8c4b6;
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    }
+
+    /* Feedback message when wrong */
+    .error-msg {
+      color: #e5989b;
+      font-size: 0.9rem;
+      font-weight: 700;
+      margin-top: 15px;
+      min-height: 22px;
+    }
+
+    /* Locked / Unlocked Views */
+    .hidden {
+      display: none !important;
+    }
+
+    .unlock-card {
+      background: #2b1d16;
+      border: 2px dashed #8c6d53;
+      border-radius: 20px;
+      padding: 25px;
+      margin-top: 15px;
+    }
+
+    .gift-title {
+      font-size: 1.3rem;
+      color: #f4eee2;
+      margin-bottom: 12px;
+      font-family: 'Fredoka One', cursive;
+      line-height: 1.4;
+    }
+
+    .action-btn {
+      background-color: #d8c4b6;
+      color: #2b1d16;
+      border: none;
+      padding: 14px 30px;
+      border-radius: 25px;
+      font-size: 1.1rem;
+      font-family: 'Fredoka One', cursive;
+      cursor: pointer;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+      transition: transform 0.2s;
+      margin-top: 10px;
+    }
+
+    .action-btn:hover {
+      transform: scale(1.05);
+      background-color: #f4eee2;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- SCREEN 1: Apology 1 -->
+  <div class="container" id="screen1">
+    <h1>Forgive me for hurting you.</h1>
+    <p>You're more valuable than anything.</p>
+    <button class="action-btn" onclick="nextScreen('screen2')">Continue</button>
+  </div>
+
+  <!-- SCREEN 2: Apology 2 -->
+  <div class="container hidden" id="screen2">
+    <h1>You deserve love, care, and kindness.</h1>
+    <button class="action-btn" onclick="nextScreen('screen3')">Continue</button>
+  </div>
+
+  <!-- SCREEN 3: Apology 3 -->
+  <div class="container hidden" id="screen3">
+    <h1>I hope we can get back to how we were.</h1>
+    <button class="action-btn" onclick="nextScreen('screen4')">Continue</button>
+  </div>
+
+  <!-- SCREEN 4: Apology 4 -->
+  <div class="container hidden" id="screen4">
+    <h1>I missed us.</h1>
+    <p>Unlock the gift by answering trivia about us :)))</p>
+    <button class="action-btn" onclick="startQuiz()">Start Question</button>
+  </div>
+
+  <!-- SCREEN 5: Question Screen -->
+  <div class="container hidden" id="quizScreen">
+    <div class="progress-bar" id="progressBar"></div>
+    <div class="question-title" id="questionText">Question goes here?</div>
+    <div class="options" id="optionsContainer"></div>
+    <div class="error-msg" id="errorMsg"></div>
+  </div>
+
+  <!-- SCREEN 6: Unlocked Gift Screen -->
+  <div class="container hidden" id="rewardScreen">
+    <h1>YAYYY GOOD JOB BABY</h1>
+
+    <div class="unlock-card">
+      <div class="gift-title">"I love you so much and I'm sorry. I love you the same way now when we first met. I'm the same person and I still love you."</div>
+      <p style="color: #f4eee2; font-weight: 700; margin-bottom: 8px; margin-top: 15px; font-size: 1.3rem;">
+        OPEN THE BAGG!!
+      </p>
+    </div>
+  </div>
+
+  <script>
+    const questions = [
+      {
+        question: "what does pm mean?? (heheheh)",
+        options: [
+          "After noon",
+          "Post marriage",
+          "Prime minister"
+        ],
+        correct: 1
+      },
+      {
+        question: "when did we officially get together?? (hint: my birthday)",
+        options: [
+          "9/11",
+          "my birthday",
+          "2 days before my birthday",
+          "when we got born"
+        ],
+        correct: 2
+      },
+      {
+        question: "telepathy",
+        options: [
+          "gremlin",
+          "grand",
+          "cuppa",
+          "jack"
+        ],
+        correct: 2 // "cuppa" is index 2
+      },
+      {
+        question: "theres 2 snacks in the bag, guess one of them",
+        options: [
+          "Pink comforting twinkies.",
+          "kinder bueno.",
+          "me.",
+          "a jar full of snails."
+        ],
+        correct: 0 // "Pink comforting twinkies." is index 0
+      },
+      {
+        question: "How much do I love you??",
+        options: [
+          "I love you",
+          "I love you a little",
+          "I love you more than anything in the entire world and I would kill for you and I want you for my own forever and you'll never leave and I'd give you my soul. I want to squeeze those cheeks or yours and hug you so close and kiss you every day."
+        ],
+        correct: 2 // The combined long response is index 2
+      }
+    ];
+
+    // Array of shuffling incorrect responses
+    const wrongMessages = [
+      "*gasp* you don't know?????",
+      "baby????",
+      "smh how could you forget",
+      "nahhh"
+    ];
+
+    let currentQuestion = 0;
+
+    function nextScreen(screenId) {
+      document.querySelectorAll('.container').forEach(el => el.classList.add('hidden'));
+      document.getElementById(screenId).classList.remove('hidden');
+    }
+
+    // Start Quiz
+    function startQuiz() {
+      nextScreen('quizScreen');
+      setupProgressBar();
+      loadQuestion();
+    }
+
+    // Build dots
+    function setupProgressBar() {
+      const bar = document.getElementById('progressBar');
+      bar.innerHTML = '';
+      questions.forEach((_, idx) => {
+        const dot = document.createElement('div');
+        dot.className = `dot ${idx === 0 ? 'active' : ''}`;
+        dot.id = `dot-${idx}`;
+        bar.appendChild(dot);
+      });
+    }
+
+    // Load active question
+    function loadQuestion() {
+      document.getElementById('errorMsg').innerText = '';
+      const q = questions[currentQuestion];
+      document.getElementById('questionText').innerText = q.question;
+      
+      const optionsContainer = document.getElementById('optionsContainer');
+      optionsContainer.innerHTML = '';
+
+      q.options.forEach((opt, idx) => {
+        const btn = document.createElement('button');
+        btn.className = 'btn';
+        btn.innerText = opt;
+        btn.onclick = () => checkAnswer(idx);
+        optionsContainer.appendChild(btn);
+      });
+
+      // Update dots
+      questions.forEach((_, idx) => {
+        const dot = document.getElementById(`dot-${idx}`);
+        if (idx === currentQuestion) dot.classList.add('active');
+        else dot.classList.remove('active');
+      });
+    }
+
+    // Check Answer
+    function checkAnswer(selectedIndex) {
+      const q = questions[currentQuestion];
+      if (selectedIndex === q.correct) {
+        currentQuestion++;
+        if (currentQuestion < questions.length) {
+          loadQuestion();
+        } else {
+          showReward();
+        }
+      } else {
+        const randomMsg = wrongMessages[Math.floor(Math.random() * wrongMessages.length)];
+        document.getElementById('errorMsg').innerText = randomMsg;
+      }
+    }
+
+    // Final Screen & Confetti
+    function showReward() {
+      nextScreen('rewardScreen');
+      confetti({
+        particleCount: 100,
+        spread: 70,
+        origin: { y: 0.6 },
+        colors: ['#d8c4b6', '#8c6d53', '#f4eee2', '#543d32']
+      });
+    }
+  </script>
+</body>
+</html>
